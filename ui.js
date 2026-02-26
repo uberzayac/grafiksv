@@ -1094,7 +1094,7 @@ function createScreenshot() {
 
 async function sendToBitrix24(base64Image, dealId) {
     try {
-        const response = await fetch('upload.php', {
+        const response = await fetch('https://misc.gv-integration.ru/grafiksv/upload.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
