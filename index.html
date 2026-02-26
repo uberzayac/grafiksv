@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор листовок</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f5f5f5; 
+            padding: 0;
+            margin: 0;
+        }
+        
+        .calculator {
+            max-width: 1100px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin: 0;
+            flex-grow: 1;
+            text-align: center;
+        }
+        
+        .header img {
+            width: 200px;
+            height: 55px;
+            object-fit: contain;
+        }
+        
+        .calculator-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 30px; 
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-grid { 
+                grid-template-columns: 1fr; 
+            }
+            .header img { display: none; }
+        }
+        
+        .input-section, .output-section { 
+            background: #f9f9f9; 
+            padding: 20px; 
+            border-radius: 8px;
+        }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        input[type="number"], input[type="text"], select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 16px; 
+        }
+        
+        .row-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .color-layout-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        
+        .radio-group input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+        }
+        
+        .material-density-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .density-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .density-options label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        
+        .print-type {
+            display: flex;
+            gap: 20px;
+            padding: 10px 10px 0 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .print-type label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .custom-size-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .lamination-cutting-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .postpress-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .postpress-group > div {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .postpress-group label {
+            font-size: 14px;
+            line-height: 1.3;
+            min-height: 36px;
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 5px;
+        }
+        
+        .delivery-discount-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .button-group button {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #saveLocalBtn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        #saveLocalBtn:hover {
+            background: #45a049;
+        }
+        
+        #saveBitrixBtn {
+            background: #2196F3;
+            color: white;
+        }
+        
+        #saveBitrixBtn:hover {
+            background: #1976D2;
+        }
+        
+        #addProductBtn {
+            background: #FF9800;
+            color: white;
+        }
+        
+        #addProductBtn:hover {
+            background: #F57C00;
+        }
+        
+        .loading { text-align: center; padding: 20px; }
+        .results { margin-top: 20px; }
+        
+        .result-item { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 10px; 
+            padding-bottom: 10px; 
+            border-bottom: 1px solid #eee; 
+        }
+        
+        .total { 
+            font-weight: bold; 
+            font-size: 1.2em; 
+            color: #333; 
+            border-bottom: none; 
+        }
+        
+        .per-piece { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-top: 5px; 
+            padding-top: 5px; 
+            border-top: 2px solid #eee; 
+            font-weight: bold; 
+            color: #333; 
+            font-size: 1.1em; 
+        }
+        
+        .minimum-cost-message {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #dc3545;
+            font-size: 0.90em;
+            font-weight: 500;
+            color: #dc3545;
+            font-style: italic;
+        }
+        
+        .details { margin-top: 15px; font-size: 0.9em; color: #666; line-height: 1.5; }
+        .error { background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-top: 20px; }
+        .last-update { text-align: center; margin-top: 20px; color: #777; }
+        
+        .fit-info {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            font-size: 0.95em;
+            color: #0d47a1;
+        }
+        
+        .custom-size-error {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            border-radius: 4px;
+            font-size: 0.95em;
+            color: #c62828;
+            display: none;
+        }
+        
+        #orderWeight {
+            margin-top: 5px;
+            padding-top: 10px;
+            border-top: 1px dashed #2196F3;
+            font-size: 1em;
+            color: #2196F3;
+        }
+        
+        #orderWeight strong {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="header">
+            <h1>Калькулятор листовок</h1>
+            <img src="logo_new_rgb75.png" alt="Логотип">
+        </div>
+
+        <div class="calculator-grid">
+            <div class="input-section">
+                <!-- Поле Клиент -->
+                <div class="form-group">
+                    <label for="clientInput">Клиент</label>
+                    <input type="text" id="clientInput" placeholder="Введите имя клиента">
+                </div>
+
+                <!-- Тираж и Формат -->
+                <div class="row-fields">
+                    <div>
+                        <label for="circulationInput">Тираж</label>
+                        <input type="number" id="circulationInput" min="1" max="5000" value="100">
+                    </div>
+                    <div>
+                        <label for="formatSelect">Формат</label>
+                        <select id="formatSelect">
+                            <option value="">Загрузка...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Поля для пользовательского формата -->
+                <div id="customSizeGroup" class="custom-size-group hidden">
+                    <div>
+                        <label for="customWidth">Длина (мм)</label>
+                        <input type="number" id="customWidth" min="1" max="450" value="100">
+                    </div>
+                    <div>
+                        <label for="customHeight">Ширина (мм)</label>
+                        <input type="number" id="customHeight" min="1" max="320" value="100">
+                    </div>
+                </div>
+
+                <!-- Информация о размещении -->
+                <div id="fitInfo" class="fit-info" style="display: none;"></div>
+                
+                <!-- Ошибка пользовательского формата -->
+                <div id="customSizeError" class="custom-size-error"></div>
+
+                <!-- Вид печати -->
+                <div class="form-group">
+                    <label>Вид печати</label>
+                    <div class="print-type">
+                        <label>
+                            <input type="radio" name="printType" value="40" checked>
+                            Односторонняя (4+0)
+                        </label>
+                        <label>
+                            <input type="radio" name="printType" value="44">
+                            Двусторонняя (4+4)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Подбор цвета и Кол-во макетов -->
+                <div class="color-layout-group">
+                    <div>
+                        <label>Подбор цвета:</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="colorMatching" value="no" checked>
+                                нет
+                            </label>
+                            <label>
+                                <input type="radio" name="colorMatching" value="yes">
+                                да
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="layoutsCount">Кол-во макетов:</label>
+                        <input type="number" id="layoutsCount" min="1" value="1" step="1">
+                    </div>
+                </div>
+
+                <!-- Материал и Плотность -->
+                <div class="material-density-group">
+                    <div>
+                        <label for="materialSelect">Материал</label>
+                        <select id="materialSelect">
+                            <option value="">Загрузка...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Плотность (г/м²)</label>
+                        <div id="densityContainer" class="density-options">
+                            <!-- Радиокнопки плотности будут добавлены через JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ламинация и Резка -->
+                <div class="lamination-cutting-group">
+                    <div>
+                        <label for="laminationSelect">Ламинация</label>
+                        <select id="laminationSelect">
+                            <option value="">Загрузка...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="cuttingSelect">Резка</label>
+                        <select id="cuttingSelect">
+                            <option value="none">без резки</option>
+                            <option value="guillotine_percent">гильотина (10% от печати)</option>
+                            <option value="plotter" disabled>плоттер</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Биговка/Фальцовка, Перфорация, Склейка -->
+                <div class="postpress-group">
+                    <div>
+                        <label for="scoringSelect">Биговка/<br>Фальцовка</label>
+                        <select id="scoringSelect">
+                            <option value="0">нет</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="foldingSelect">Перфорация</label>
+                        <select id="foldingSelect">
+                            <option value="0">нет</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="gluingSelect">Склейка</label>
+                        <select id="gluingSelect">
+                            <option value="0">нет</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Доставка и Скидка -->
+                <div class="delivery-discount-group">
+                    <div>
+                        <label for="deliveryInput">Доставка (руб)</label>
+                        <input type="number" id="deliveryInput" min="0" value="0" step="1">
+                    </div>
+                    <div>
+                        <label for="discountInput">Скидка <span class="discount-label">(от 0 до 10%)</span></label>
+                        <input type="number" id="discountInput" min="0" max="10" value="0" step="1">
+                    </div>
+                </div>
+
+                <!-- Группа кнопок -->
+                <div class="button-group">
+                    <button id="saveLocalBtn">Сохранить скрин на ПК</button>
+                    <button id="saveBitrixBtn">Сохранить скрин в Б24</button>
+                    <button id="addProductBtn">Добавить товар в Б24</button>
+                </div>
+            </div>
+
+            <!-- Правая колонка - результаты -->
+            <div class="output-section">
+                <div id="loading" class="loading">Загрузка данных...</div>
+                
+                <div id="results" style="display: none;">
+                    <h3>Результаты расчета</h3>
+                    
+                    <div class="result-item">
+                        <span>Стоимость печати:</span>
+                        <span id="printCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span>Стоимость материала:</span>
+                        <span id="materialCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span>Стоимость ламинации:</span>
+                        <span id="laminationCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span>Стоимость резки:</span>
+                        <span id="cuttingCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span>Стоимость биговки/фальцовки:</span>
+                        <span id="scoringCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span>Стоимость перфорации:</span>
+                        <span id="foldingCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span>Стоимость склейки:</span>
+                        <span id="gluingCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item" id="colorMatchingRow" style="display: none;">
+                        <span>Подбор цвета:</span>
+                        <span id="colorMatchingCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item" id="layoutsRow" style="display: none;">
+                        <span>Доплата за макеты:</span>
+                        <span id="layoutsCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item" id="discountRow" style="display: none;">
+                        <span>Скидка:</span>
+                        <span id="discountAmount">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span>Доставка:</span>
+                        <span id="deliveryCost">0 руб.</span>
+                    </div>
+                    
+                    <div class="result-item total">
+                        <span>Итого:</span>
+                        <span id="totalEl">0 руб.</span>
+                    </div>
+                    
+                    <div class="per-piece">
+                        <span class="label">Стоимость за 1 шт.:</span>
+                        <span class="value" id="perPieceEl">0.00 руб.</span>
+                    </div>
+                    
+                    <div class="result-item" id="orderWeight">
+                        <span><strong>Вес заказа:</strong></span>
+                        <span id="weightValue" style="font-weight: bold;">0 г</span>
+                    </div>
+                    
+                    <div id="minimumCostMessage" class="minimum-cost-message" style="display: none;">
+                        <span>Минимальная стоимость печати:</span>
+                        <span id="minimumCostValue">950 ₽</span>
+                    </div>
+                    
+                    <div class="details" id="details"></div>
+                </div>
+                
+                <div id="error" class="error" style="display: none;">
+                    Произошла ошибка при загрузке данных
+                </div>
+            </div>
+        </div>
+
+        <div class="last-update">
+            <p id="lastUpdate">Данные обновлены: -</p>
+        </div>
+    </div>
+
+    <!-- Подключение скриптов -->
+    <script type="module" src="data.js"></script>
+    <script type="module" src="calc.js"></script>
+    <script type="module" src="ui.js"></script>
+
+    <!-- Скрипт для динамической подстройки высоты iframe в Битрикс24 -->
+    <script>
+        (function() {
+            // Функция для отправки высоты контента в родительское окно
+            function sendHeightToParent() {
+                if (window.self !== window.top && typeof BX24 !== 'undefined') {
+                    try {
+                        // Получаем реальную высоту контента
+                        const body = document.body;
+                        const html = document.documentElement;
+                        
+                        // Вычисляем максимальную высоту
+                        const height = Math.max(
+                            body.scrollHeight,
+                            body.offsetHeight,
+                            html.clientHeight,
+                            html.scrollHeight,
+                            html.offsetHeight
+                        );
+                        
+                        console.log('📏 Реальная высота контента:', height);
+                        
+                        // Добавляем небольшой запас
+                        const targetHeight = height + 20;
+                        
+                        // Отправляем команду на изменение размера
+                        BX24.resizeWindow(window.innerWidth, targetHeight);
+                        
+                        // Дополнительно устанавливаем высоту через CSS
+                        document.body.style.minHeight = targetHeight + 'px';
+                        document.documentElement.style.minHeight = targetHeight + 'px';
+                        
+                    } catch (e) {
+                        console.warn('⚠️ Ошибка изменения размера:', e);
+                    }
+                }
+            }
+
+            // Функция принудительной установки высоты
+            function forceSetHeight() {
+                if (window.self !== window.top && typeof BX24 !== 'undefined') {
+                    try {
+                        // Устанавливаем большую высоту (2000px как запас)
+                        BX24.resizeWindow(window.innerWidth, 2000);
+                        
+                        // Через небольшую задержку отправляем реальную высоту
+                        setTimeout(sendHeightToParent, 100);
+                        setTimeout(sendHeightToParent, 300);
+                        setTimeout(sendHeightToParent, 500);
+                        setTimeout(sendHeightToParent, 1000);
+                        setTimeout(sendHeightToParent, 2000);
+                    } catch (e) {}
+                }
+            }
+
+            // Вызываем при загрузке
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', forceSetHeight);
+            } else {
+                forceSetHeight();
+            }
+
+            window.addEventListener('load', function() {
+                setTimeout(forceSetHeight, 100);
+                setTimeout(forceSetHeight, 500);
+            });
+
+            // Отслеживаем изменения
+            const observer = new MutationObserver(function() {
+                setTimeout(sendHeightToParent, 50);
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                characterData: true
+            });
+
+            // События
+            ['click', 'input', 'change', 'resize'].forEach(event => {
+                document.addEventListener(event, function() {
+                    setTimeout(sendHeightToParent, 100);
+                });
+            });
+
+            // Периодическая проверка (каждые 2 секунды)
+            setInterval(sendHeightToParent, 2000);
+        })();
+    </script>
+</body>
+</html>
